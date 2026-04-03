@@ -1,4 +1,4 @@
-var admin = require("firebse-admin");
+var admin = require("firebase-admin");
 
 var serviceAccount = require("./serviceAccountKey.json");
 
