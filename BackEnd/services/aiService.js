@@ -1,8 +1,7 @@
 const router = require('express').Router();
 const {GoogleGenerativeAI} = require('@google/generative-ai');
 const { collections } = require('../config/firebase');
-const { authMiddleware } = require('../middleware/middleware');
-const { text } = require('express');
+const { authenticate } = require('../middleware/middleware');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
@@ -17,7 +16,7 @@ const model = genAI.getGenerativeModel({
         Be concise, helpful, and educational. Format your responses with markdown when appropriate.`,
 })
 
-router.use(authMiddleware);
+router.use(authenticate);
 
 
 //call gemini and log interaction
@@ -51,7 +50,7 @@ router.post('/suggest',async(req,res)=>{
         const result = await callGemini({ prompt, type: "suggestion", documentId, userId: req.user.id });
         res.json({ suggestions: result });
     }catch(error){
-        res.status(500).json({ error: "AI request failed", detail: err.message });
+        res.status(500).json({ error: "AI request failed", detail: error.message });
     }
 })
 
