@@ -4,8 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import AIAssistantPanel from "../components/AIAssistantPanel";
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_DB_URL;
+// ─── Config ─────────────────────────────
 const WS  = import.meta.env.VITE_API_DB_URL;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

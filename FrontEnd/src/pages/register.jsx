@@ -49,6 +49,7 @@ export default function Register() {
 
       if (response.ok) {
         localStorage.setItem('token', data.token) // Save token for future authenticated requests
+        localStorage.setItem("name", data.name || data.email) // Save name for display
         localStorage.setItem('uid', data.uid) // Save user info
         toast.success('Account created successfully!')
         setTimeout(() => navigate('/verify-email'), 1000);

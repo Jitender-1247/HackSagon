@@ -40,6 +40,7 @@ export default function Login() {
 
       if (response.ok) {
         localStorage.setItem("token", data.token) 
+        localStorage.setItem("name", data.name || data.email)
         localStorage.setItem("uid", data.uid)      
         toast.success('Login successful!')
         navigate('/')

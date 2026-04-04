@@ -9,7 +9,7 @@ router.get("/workspaces/:wid/docs", requireWorkspaceMember(), async (req, res) =
   try {
     const snap = await collections.documents
       .where("workspaceId", "==", req.params.wid)
-      .get();  // ← no orderBy, no composite index needed
+      .get(); 
 
     const docs = await Promise.all(
       snap.docs
@@ -130,7 +130,6 @@ router.get("/docs/:id/versions", async (req, res) => {
   try {
     const snap = await collections.documentVersions
       .where("documentId", "==", req.params.id)
-      .orderBy("createdAt", "desc")
       .get();
 
     const versions = await Promise.all(
@@ -213,7 +212,6 @@ router.get("/docs/:id/comments", async (req, res) => {
     const snap = await collections.comments
       .where("documentId", "==", req.params.id)
       .where("parentCommentId", "==", null)
-      .orderBy("createdAt", "asc")
       .get();
 
     const comments = await Promise.all(
@@ -224,7 +222,6 @@ router.get("/docs/:id/comments", async (req, res) => {
 
         const repliesSnap = await collections.comments
           .where("parentCommentId", "==", doc.id)
-          .orderBy("createdAt", "asc")
           .get();
 
         const replies = await Promise.all(

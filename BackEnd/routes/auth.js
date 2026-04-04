@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt')
 require('dotenv').config()
 
 const { sendOtpEmail } = require('./emailService')
+const { use } = require('react')
 
 const SALT_ROUNDS = 12
 
@@ -47,7 +48,7 @@ router.post('/register', async (req, res) => {
       email,
       password: hashedPassword,
       role: 'editor',
-      isOnline: false,
+      isOnline: true,
       emailVerified: false,
       emailOtp: hashedOtp,
       otpExpiry: expiry,
@@ -57,7 +58,7 @@ router.post('/register', async (req, res) => {
     await sendOtpEmail(email, otp)
 
     const token = jwt.sign(
-      { uid: userRef.id, email },
+      { uid: userRef.id, email , name },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     )
@@ -65,7 +66,8 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: 'User registered. Please verify your email.',
       token,
-      uid: userRef.id
+      uid: userRef.id,
+      name:userRef.name
     })
 
   } catch (err) {
@@ -99,13 +101,16 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
+    await userDoc.ref.update({ isOnline: true });
+
     const token = jwt.sign(
-      { uid: userDoc.id, email },
+      { uid: userDoc.id, email , name: user.name },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     )
 
     res.json({
+      name: user.name,
       token,
       uid: userDoc.id
     })

@@ -233,20 +233,24 @@ router.delete("/workspaces/:wid/members/:uid", requireWorkspaceMember("admin"), 
 // TASKS
 // ════════════════════════════════════════════════════════════
 
+
 // GET /api/v1/workspaces/:wid/tasks
 router.get("/workspaces/:wid/tasks", requireWorkspaceMember(), async (req, res) => {
   try {
     const snap = await collections.tasks
       .where("workspaceId", "==", req.params.wid)
-      .orderBy("createdAt", "desc")
-      .get();
+      .get(); 
 
-    const tasks = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const tasks = snap.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // ← sort in JS
+
     res.json({ tasks });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // POST /api/v1/workspaces/:wid/tasks
 router.post("/workspaces/:wid/tasks", requireWorkspaceMember("editor"), async (req, res) => {
@@ -334,16 +338,19 @@ router.delete("/tasks/:id", async (req, res) => {
 // NOTIFICATIONS
 // ════════════════════════════════════════════════════════════
 
+
 // GET /api/v1/notifications
 router.get("/notifications", async (req, res) => {
   try {
     const snap = await collections.notifications
       .where("userId", "==", req.user.id)
-      .orderBy("createdAt", "desc")
-      .limit(50)
       .get();
 
-    const notifications = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const notifications = snap.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))  // ← sort in JS
+      .slice(0, 50);  // ← limit in JS
+
     res.json({ notifications });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -365,9 +372,13 @@ router.patch("/notifications/read-all", async (req, res) => {
   try {
     const snap = await collections.notifications
       .where("userId", "==", req.user.id)
-      .where("isRead", "==", false)
-      .get();
-    await Promise.all(snap.docs.map((doc) => doc.ref.update({ isRead: true })));
+      .get();  // ← removed .where("isRead", "==", false)
+
+    await Promise.all(
+      snap.docs
+        .filter(doc => !doc.data().isRead)  // ← filter in JS
+        .map((doc) => doc.ref.update({ isRead: true }))
+    );
     res.json({ message: "All marked as read" });
   } catch (err) {
     res.status(500).json({ error: err.message });
