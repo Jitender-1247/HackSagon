@@ -395,7 +395,7 @@ export default function AIAssistantPanel({
 
       {/* Footer */}
       <div style={{ padding: "8px 16px", borderTop: "1px solid #1a1b2e", background: "#0b0c18", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 10, color: "#3d3d5c" }}>Powered by Gemini 1.5 Flash</span>
+        <span style={{ fontSize: 10, color: "#3d3d5c" }}>✦ Gemini</span>
         <div style={{ display: "flex", gap: 4 }}>
           {TABS.map(t => (
             <div

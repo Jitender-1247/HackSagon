@@ -1,17 +1,8 @@
-/**
- * CollabLearn WebSocket Collaboration Server
- * Built on Socket.io — handles:
- *  - Real-time document editing (Yjs ops forwarded as binary)
- *  - Live cursor tracking per user
- *  - Presence (who is editing what)
- *  - Operation logging to Firestore for audit trail
- */
-
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const { collections } = require("../config/firebase");
+const { name } = require("ejs");
 
-// In-memory presence store: docId → Map<userId, sessionData>
 const presence = new Map();
 
 const getOrCreate = (docId) => {
@@ -19,7 +10,6 @@ const getOrCreate = (docId) => {
   return presence.get(docId);
 };
 
-/** Assign a unique color to each collaborator */
 const COLORS = ["#6366f1","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4","#ec4899","#84cc16"];
 let colorIdx = 0;
 const nextColor = () => COLORS[colorIdx++ % COLORS.length];
@@ -27,7 +17,7 @@ const nextColor = () => COLORS[colorIdx++ % COLORS.length];
 const initCollabSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: { origin: process.env.CLIENT_URL || "http://localhost:5173", methods: ["GET", "POST"] },
-    maxHttpBufferSize: 5e6, // 5MB for Yjs binary updates
+    maxHttpBufferSize: 5e6,
   });
 
   // ── JWT Auth middleware ──────────────────────────────────────────────────
@@ -36,14 +26,16 @@ const initCollabSocket = (httpServer) => {
     if (!token) return next(new Error("Authentication required"));
 
     try {
-      const userDoc = await collections.users.doc(payload.uid).get();
+      const payload = jwt.verify(token, process.env.JWT_SECRET); // ← fix
+      const userDoc = await collections.users.doc(payload.uid).get(); // ← fix
       if (!userDoc.exists) return next(new Error("User not found"));
 
       const userData = userDoc.data();
       socket.user = { id: userDoc.id, name: userData.name };
       socket.color = nextColor();
       next();
-    } catch {
+    } catch (err) {
+      console.error("[WS] Auth error:", err.message); // ← helpful for debugging
       next(new Error("Invalid token"));
     }
   });
@@ -60,10 +52,10 @@ const initCollabSocket = (httpServer) => {
 
       const docPresence = getOrCreate(documentId);
       docPresence.set(socket.user.id, {
-        userId: socket.user.id,
-        name: socket.user.name,
-        color: socket.color,
-        cursor: null,
+        userId:   socket.user.id,
+        name:     socket.user.name,
+        color:    socket.color,
+        cursor:   null,
         joinedAt: new Date().toISOString(),
       });
 
@@ -90,7 +82,7 @@ const initCollabSocket = (httpServer) => {
         await sessionQuery.docs[0].ref.update(sessionData);
       }
 
-      // Broadcast updated presence list to room
+      // ← broadcast to ALL in room including the new joiner
       io.to(documentId).emit("doc:presence", {
         documentId,
         users: Array.from(docPresence.values()),
@@ -99,34 +91,33 @@ const initCollabSocket = (httpServer) => {
       console.log(`[WS] ${socket.user.name} joined doc ${documentId}`);
     });
 
-    // ── doc:operation — forward Yjs update to other clients ──────────────
+    // ── doc:operation ────────────────────────────────────────────────────
     socket.on("doc:operation", async ({ documentId, update, revision }) => {
       if (!documentId || !update) return;
 
-      // Forward to everyone else in the room
       socket.to(documentId).emit("doc:operation", {
         userId: socket.user.id,
+        name:   socket.user.name,
+        color:  socket.color,
         update,
         revision,
       });
 
-      // Log to Firestore (async, non-blocking)
       collections.operations.add({
         documentId,
-        userId: socket.user.id,
-        type: "insert", // Yjs handles actual OT internally
-        position: 0,
-        content: "[yjs-binary]",
-        revision: revision || 0,
+        userId:    socket.user.id,
+        type:      "insert",
+        position:  0,
+        content:   "[yjs-binary]",
+        revision:  revision || 0,
         createdAt: new Date().toISOString(),
       }).catch(() => {});
 
-      // Update last active in presence map
       const userPresence = getOrCreate(documentId).get(socket.user.id);
       if (userPresence) userPresence.lastActiveAt = new Date().toISOString();
     });
 
-    // ── doc:cursor — broadcast cursor / selection position ───────────────
+    // ── doc:cursor ───────────────────────────────────────────────────────
     socket.on("doc:cursor", ({ documentId, position, selection }) => {
       if (!documentId) return;
 
@@ -135,11 +126,11 @@ const initCollabSocket = (httpServer) => {
       if (userData) userData.cursor = position;
 
       socket.to(documentId).emit("doc:cursor", {
-        userId: socket.user.id,
-        name: socket.user.name,
-        color: socket.color,
+        userId:    socket.user.id,
+        name:      socket.user.name,
+        color:     socket.color,
         position,
-        selection,
+        selection, // ← passes selection through for remote highlights
       });
     });
 
