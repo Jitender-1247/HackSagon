@@ -42,7 +42,7 @@ export default function Login() {
 
       if (response.ok) {
         toast.success('Login successful!')
-        navigate('/dashboard')
+        navigate('/')
       } else {
         toast.error(data.message || 'Invalid credentials')
       }

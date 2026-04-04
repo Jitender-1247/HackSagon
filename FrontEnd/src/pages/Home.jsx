@@ -1,130 +1,161 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+const API_BASE = import.meta.env.VITE_API_AI_URL;
 
 export default function Home() {
-   
-  const recentDocs = [
-    { id: 1, title: 'Project Alpha Requirements', updated: '10 mins ago', author: 'Alice' },
-    { id: 2, title: 'Q3 Marketing Plan', updated: '2 hours ago', author: 'Bob' },
-    { id: 3, title: 'API Endpoints Draft', updated: 'Yesterday', author: 'You' },
-    { id: 4, title: 'Weekly Sync Notes', updated: '2 days ago', author: 'Charlie' },
-  ];
+  const navigate = useNavigate();
+  const { wid } = useParams(); // Get workspace ID from URL if available
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // For this demo/impl, we use a fallback wid if none is in the URL
+  const currentWid = wid || "default-workspace-id"; 
+  const token = localStorage.getItem("token");
 
-  const tasks = [
-    { id: 1, text: 'Review Anthropic AI integration', status: 'In Progress' },
-    { id: 2, text: 'Update Prisma schema for new models', status: 'Pending' },
-    { id: 3, text: 'Fix Yjs WebSocket sync issue', status: 'Done' },
-  ];
+  // ─── Fetch Documents (Matches your GET /api/workspaces/:wid/docs) ───────────
+  const fetchDocs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/workspaces/${currentWid}/docs`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!res.ok) throw new Error("Could not fetch documents");
+      
+      const data = await res.json();
+      console.log("Fetched docs:", data.docs);
+      setDocs(data.docs || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentWid, token]);
 
-  const members = [
-    { id: 1, name: 'Alice (Admin)', initials: 'A', status: 'online' },
-    { id: 2, name: 'Bob (Editor)', initials: 'B', status: 'online' },
-    { id: 3, name: 'Charlie (Viewer)', initials: 'C', status: 'offline' },
-  ];
+  useEffect(() => {
+    if (token) fetchDocs();
+  }, [fetchDocs, token]);
+
+  // ─── Create Document (Matches your POST /api/workspaces/:wid/docs) ──────────
+  const handleCreateDoc = async (type = 'document') => {
+    const title = prompt("Enter document title:", "New Project Draft");
+    if (!title) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/workspaces/${currentWid}/docs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title,
+          type, // "document" or "code"
+          language: type === 'code' ? 'javascript' : null
+        })
+      });
+
+      const { doc } = await res.json();
+      if (doc?.id) {
+        // Navigate to the editor using the ID returned by Firebase
+        navigate(`/editor/${doc.id}`);
+      }
+    } catch (err) {
+      alert("Failed to create document: " + err.message);
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-800">
+    <div className="flex h-screen bg-[#07080f] text-[#c9d1d9] font-sans">
       
-      {/* Sidebar: Workspace Overview & Members */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col md:flex">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-indigo-600">CollabLearn AI</h1>
-          <p className="text-sm text-gray-500 mt-1">Main Workspace</p>
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#0b0c18] border-r border-[#1a1b2e] flex flex-col">
+        <div className="p-6 border-b border-[#1a1b2e]">
+          <h1 className="text-xl font-bold text-[#6c3fff] flex items-center gap-2">
+            <span className="text-2xl">✦</span> StealthLead
+          </h1>
+          <p className="text-[10px] text-[#6060a0] mt-1 uppercase tracking-[0.2em] font-bold">Workspace Engine</p>
         </div>
 
-        <div className="p-6 flex-1">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-            Workspace Members
-          </h2>
-          <ul className="space-y-3">
-            {members.map((member) => (
-              <li key={member.id} className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                    {member.initials}
-                  </div>
-                  <span 
-                    className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white ${
-                      member.status === 'online' ? 'bg-green-400' : 'bg-gray-300'
-                    }`} 
-                  />
-                </div>
-                <span className="text-sm font-medium">{member.name}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="p-6 flex-1 space-y-8">
+          <div>
+            <h2 className="text-xs font-semibold text-[#3d3d5c] uppercase tracking-wider mb-4">Create New</h2>
+            <div className="grid grid-cols-1 gap-2">
+              <button onClick={() => handleCreateDoc('document')} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#12122a] text-sm text-[#a78bfa] transition-all">
+                <span className="text-lg">¶</span> Rich Document
+              </button>
+              <button onClick={() => handleCreateDoc('code')} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#12122a] text-sm text-[#22d3ee] transition-all">
+                <span className="text-lg">{'</>'}</span> Source Code
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <header className="flex justify-between items-center mb-8">
+      {/* Main Content */}
+      <main className="flex-1 p-10 overflow-y-auto">
+        <header className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Good evening!</h2>
-            <p className="text-gray-500">Here's what's happening in your workspace.</p>
+            <h2 className="text-4xl font-black text-white tracking-tight">Dashboard</h2>
+            <p className="text-[#6060a0] mt-2">Workspace ID: <span className="font-mono text-[#a78bfa]">{currentWid}</span></p>
           </div>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">
-            + New Document
+          <button 
+            onClick={() => handleCreateDoc('document')}
+            className="bg-[#6c3fff] hover:bg-[#5a32d1] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#6c3fff33]"
+          >
+            + Quick Doc
           </button>
         </header>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Documents Grid (Takes up 2 columns on large screens) */}
-          <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold border-b-2 border-indigo-500 pb-1 inline-block">
-                Recent Documents
-              </h3>
-              <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800">View all</a>
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/50 text-red-200 p-4 rounded-xl mb-8">
+            ⚠ {error}
+          </div>
+        )}
+
+        {/* Documents Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {loading ? (
+            <div className="col-span-full py-20 text-center text-[#3d3d5c] animate-pulse">Syncing with Firebase...</div>
+          ) : docs.length === 0 ? (
+            <div className="col-span-full py-20 border-2 border-dashed border-[#1a1b2e] rounded-3xl text-center text-[#6060a0]">
+              No documents in this workspace yet.
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentDocs.map((doc) => (
-                <div key={doc.id} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
-                      {/* Document Icon Placeholder */}
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
+          ) : (
+            docs.map((doc) => (
+              <div 
+                key={doc.id} 
+                onClick={() => navigate(`/editor/${doc.id}`)}
+                className="group bg-[#0b0c18] border border-[#1a1b2e] p-6 rounded-2xl hover:border-[#6c3fff] transition-all cursor-pointer relative"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className={`p-3 rounded-xl ${doc.type === 'code' ? 'bg-[#0e162a] text-[#22d3ee]' : 'bg-[#1a0f3d] text-[#a78bfa]'}`}>
+                    {doc.type === 'code' ? 'Code' : 'Doc'}
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 truncate">{doc.title}</h4>
-                  <p className="text-xs text-gray-500">
-                    Updated {doc.updated} • By {doc.author}
-                  </p>
+                  <div className="text-[10px] text-[#3d3d5c] font-bold uppercase tracking-widest">
+                    {doc.language || 'Plain Text'}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tasks Section (Takes up 1 column) */}
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">My Tasks</h3>
-            <ul className="space-y-4">
-              {tasks.map((task) => (
-                <li key={task.id} className="flex items-start">
-                  <input 
-                    type="checkbox" 
-                    className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                    defaultChecked={task.status === 'Done'}
-                  />
-                  <div className="ml-3">
-                    <p className={`text-sm ${task.status === 'Done' ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                      {task.text}
-                    </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-                      task.status === 'Done' ? 'bg-green-100 text-green-700' :
-                      task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {task.status}
-                    </span>
+                
+                <h4 className="text-lg font-bold text-[#f0f0ff] mb-2 group-hover:text-[#6c3fff] transition-colors">{doc.title}</h4>
+                
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[#1a1b2e]">
+                  <div className="w-6 h-6 rounded-full bg-[#1a1b2e] flex items-center justify-center text-[10px] font-bold">
+                    {doc.createdBy?.name?.charAt(0) || '?'}
                   </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
+                  <div className="text-xs">
+                    <p className="text-[#c9d1d9] font-medium">{doc.createdBy?.name}</p>
+                    <p className="text-[#3d3d5c]">{new Date(doc.updatedAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
     </div>
