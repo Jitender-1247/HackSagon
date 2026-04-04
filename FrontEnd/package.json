@@ -16,6 +16,7 @@
     "@tiptap/react": "^3.22.1",
     "@tiptap/starter-kit": "^3.22.1",
     "dotenv": "^17.4.0",
+    "firebase": "^12.11.0",
     "lucide-react": "^1.7.0",
     "nodemon": "^3.1.14",
     "react": "^19.2.4",
@@ -25,7 +26,8 @@
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.2.2",
     "y-websocket": "^3.0.0",
-    "yjs": "^13.6.30"
+    "yjs": "^13.6.30",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -11,7 +11,7 @@ const authenticate = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const userDoc = await collections.users.doc(payload.userId).get();
+    const userDoc = await collections.users.doc(payload.uid).get();
     if (!userDoc.exists) return res.status(401).json({ error: "User not found" });
 
     const data = userDoc.data();

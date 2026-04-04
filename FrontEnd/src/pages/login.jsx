@@ -12,8 +12,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_DB_URL
-  console.log('API URL:', API_URL)
-
   const handleLogin = async (e) => {
     e.preventDefault()
 
@@ -41,6 +39,8 @@ export default function Login() {
       }
 
       if (response.ok) {
+        localStorage.setItem("token", data.token) 
+        localStorage.setItem("uid", data.uid)      
         toast.success('Login successful!')
         navigate('/')
       } else {

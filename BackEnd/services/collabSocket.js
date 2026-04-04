@@ -36,8 +36,7 @@ const initCollabSocket = (httpServer) => {
     if (!token) return next(new Error("Authentication required"));
 
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET);
-      const userDoc = await collections.users.doc(payload.userId).get();
+      const userDoc = await collections.users.doc(payload.uid).get();
       if (!userDoc.exists) return next(new Error("User not found"));
 
       const userData = userDoc.data();

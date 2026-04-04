@@ -1,22 +1,3 @@
-/**
- * EditorPage.jsx — fully wired
- *
- * Real data sources:
- *  - Token        : localStorage.getItem("token")
- *  - Current user : JWT decoded (uid + email)
- *  - Doc          : GET /api/docs/:docId  (React Router useParams)
- *  - Save         : PATCH /api/docs/:docId  (debounced auto-save)
- *  - Versions     : GET/POST /api/docs/:docId/versions
- *  - Restore      : POST /api/docs/:docId/versions/:vid/restore
- *  - Collaborators: Socket.io  doc:presence
- *  - Cursors      : Socket.io  doc:cursor  (emit + receive)
- *  - Live edits   : Socket.io  doc:operation  (plain-text, no Yjs yet)
- *
- * Backwards-typing fix:
- *  - contentEditable div is NEVER written from React state while the user types.
- *  - dangerouslySetInnerHTML is gone; content is seeded once on mount via useEffect.
- *  - All syncs are DOM → state (one direction while editing).
- */
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -25,7 +6,7 @@ import AIAssistantPanel from "../components/AIAssistantPanel";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const API = import.meta.env.VITE_API_DB_URL;
-const WS  = import.meta.env.VITE_API_AI_URL;
+const WS  = import.meta.env.VITE_API_DB_URL;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getToken = () => localStorage.getItem("token");
@@ -165,7 +146,7 @@ export default function DocumentEditor() {
     if (!docId || !token) return;
     (async () => {
       try {
-        const res  = await fetch(`${WS}/api/docs/${docId}`, { headers: authHeaders() });
+        const res  = await fetch(`${WS}/docs/${docId}`, { headers: authHeaders() });
         if (!res.ok) throw new Error((await res.json()).error || "Failed to load document");
         const { doc: d } = await res.json();
 
@@ -210,7 +191,8 @@ export default function DocumentEditor() {
   useEffect(() => {
     if (!docId || !token) return;
 
-    const socket = io(WS, { auth: { token } });
+    const SOCKET_URL = import.meta.env.VITE_API_AI_URL; // http://localhost:4000
+    const socket = io(SOCKET_URL, { auth: { token } });
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -275,7 +257,7 @@ export default function DocumentEditor() {
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
-        await fetch(`${WS}/api/docs/${docId}`, {
+        await fetch(`${WS}/docs/${docId}`, {
           method:  "PATCH",
           headers: authHeaders(),
           body:    JSON.stringify({ content }),
@@ -375,7 +357,7 @@ export default function DocumentEditor() {
   const handleTitleBlur = async () => {
     setEditingTitle(false);
     if (!title.trim()) return;
-    await fetch(`${WS}/api/docs/${docId}`, {
+    await fetch(`${WS}/docs/${docId}`, {
       method:  "PATCH",
       headers: authHeaders(),
       body:    JSON.stringify({ title }),
@@ -388,7 +370,7 @@ export default function DocumentEditor() {
   const loadVersions = useCallback(async () => {
     setVersionsLoading(true);
     try {
-      const res  = await fetch(`${WS}/api/docs/${docId}/versions`, { headers: authHeaders() });
+      const res  = await fetch(`${WS}/docs/${docId}/versions`, { headers: authHeaders() });
       const data = await res.json();
       setVersions(data.versions || []);
     } catch {}
@@ -398,7 +380,7 @@ export default function DocumentEditor() {
   const handleSaveVersion = async () => {
     const message = prompt("Version message (optional):") || undefined;
     setSaveLabel("Saving version…");
-    await fetch(`${WS}/api/docs/${docId}/versions`, {
+    await fetch(`${WS}/docs/${docId}/versions`, {
       method:  "POST",
       headers: authHeaders(),
       body:    JSON.stringify({ message }),
@@ -410,7 +392,7 @@ export default function DocumentEditor() {
 
   const handleRestoreVersion = async (vid) => {
     if (!confirm("Restore this version? Your current content will be auto-saved first.")) return;
-    const res  = await fetch(`${WS}/api/docs/${docId}/versions/${vid}/restore`, {
+    const res  = await fetch(`${WS}/docs/${docId}/versions/${vid}/restore`, {
       method: "POST", headers: authHeaders(),
     });
     const { doc: restored } = await res.json();
