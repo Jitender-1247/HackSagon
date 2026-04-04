@@ -39,7 +39,7 @@ export default function VerifyEmail() {
 
       if (res.ok) {
         toast.success('Email verified successfully 🚀')
-        setTimeout(() => navigate('/connect-linkedin'), 1000)
+        setTimeout(() => navigate('/'), 1000)
       } else {
         toast.error(data.error || 'Verification failed')
       }

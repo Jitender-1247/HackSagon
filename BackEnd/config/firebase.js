@@ -1,5 +1,4 @@
 var admin = require("firebase-admin");
-
 var serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
@@ -8,4 +7,16 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-module.exports = { db , admin };
+const collections = {
+  users: db.collection("users"),
+  workspaces: db.collection("workspaces"),
+  workspaceMembers: db.collection("workspaceMembers"),
+  documents: db.collection("documents"),
+  documentVersions: db.collection("documentVersions"),
+  comments: db.collection("comments"),
+  operations: db.collection("operations"),
+  collaborationSessions: db.collection("collaborationSessions"),
+  aiInteractions: db.collection("aiInteractions"),
+};
+
+module.exports = { db, admin, collections };
