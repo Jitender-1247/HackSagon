@@ -43,7 +43,7 @@ export default function Login() {
         localStorage.setItem("name", data.name || data.email)
         localStorage.setItem("uid", data.uid)      
         toast.success('Login successful!')
-        navigate('/')
+        navigate('/dashboard')
       } else {
         toast.error(data.message || 'Invalid credentials')
       }

@@ -121,7 +121,7 @@ export default function Sidebar() {
 
         {/* Logo */}
         <div>
-          <img src={Logo} alt="Logo" onClick={() => navigate('/')} style={{ width: 200, margin: 8, cursor: 'pointer' }} />
+          <img src={Logo} alt="Logo" onClick={() => navigate('/dashboard')} style={{ width: 200, margin: 8, cursor: 'pointer' }} />
         </div>
 
         {/* Workspace switcher */}
