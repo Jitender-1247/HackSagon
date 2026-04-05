@@ -11,7 +11,7 @@ const decodeJwt = (token) => {
 };
 
 const NAV_ITEMS = [
-  { path: '/',              icon: 'grid',   label: 'Dashboard'     },
+  { path: '/dashboard',     icon: 'grid',   label: 'Dashboard'     },
   { path: '/members',       icon: 'users',  label: 'Members'       },
   { path: '/tasks',         icon: 'check',  label: 'Tasks'         },
   { path: '/notifications', icon: 'bell',   label: 'Notifications' },
@@ -225,7 +225,7 @@ export default function Home() {
 
         {/* Logo */}
         <div>
-          <img src={Logo} onClick={() => navigate('/')} alt="Inksync Logo" style={{ width: 200, margin: 8, cursor: 'pointer' }} />
+          <img src={Logo} onClick={() => navigate('/dashboard')} alt="Inksync Logo" style={{ width: 200, margin: 8, cursor: 'pointer' }} />
         </div>
 
         {/* Workspace switcher */}
