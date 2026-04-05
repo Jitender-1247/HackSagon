@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import Logo from '../assets/inksync_logo.svg';
+import Logo from '../assets/inksync_logo1.svg';
 
 const API_BASE = import.meta.env.VITE_API_AI_URL;
 
@@ -225,7 +225,7 @@ export default function Home() {
 
         {/* Logo */}
         <div>
-          <img src={Logo} onClick={() => navigate('/dashboard')} alt="Inksync Logo" style={{ width: 200, margin: 8, cursor: 'pointer' }} />
+          <img src={Logo} onClick={() => navigate('/dashboard')} alt="Inksync Logo"  style={{ width: 200, margin: 8, cursor: 'pointer' }} />
         </div>
 
         {/* Workspace switcher */}

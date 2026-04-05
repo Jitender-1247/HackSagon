@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../assets/inksync_logo.svg';
+import Logo from '../assets/inksync_logo1.svg';
 
 const FEATURES = [
   {
