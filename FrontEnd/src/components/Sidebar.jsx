@@ -11,7 +11,7 @@ const decodeJwt = (token) => {
 };
 
 const NAV_ITEMS = [
-  { path: '/',              icon: 'grid',   label: 'Dashboard'     },
+  { path: '/dashboard',     icon: 'grid',   label: 'Dashboard'     },
   { path: '/members',       icon: 'users',  label: 'Members'       },
   { path: '/tasks',         icon: 'check',  label: 'Tasks'         },
   { path: '/notifications', icon: 'bell',   label: 'Notifications' },

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../assets/inksync_logo.svg';
 
 const FEATURES = [
   {
@@ -114,8 +115,7 @@ export default function LandingPage() {
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9, background: '#6c3fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#fff' }}>⚡</div>
-          <span style={{ fontWeight: 800, fontSize: 17, color: '#f0f0ff', letterSpacing: '-0.4px' }}>CollabLearn</span>
+          <img src={Logo} alt="InkSync Logo"  className='w-50 h-auto mt-5 '/> 
         </div>
 
         {/* Nav links */}
@@ -362,23 +362,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* ── Footer ── */}
-      <footer style={{ borderTop: '1px solid #1a1b2e', padding: '32px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: '#6c3fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff' }}>⚡</div>
-          <span style={{ fontWeight: 700, fontSize: 14, color: '#f0f0ff' }}>CollabLearn</span>
-        </div>
-        <span style={{ fontSize: 12, color: '#3d3d5c' }}>© 2026 CollabLearn. Built for the Clashers team.</span>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {['Privacy', 'Terms', 'Contact'].map(l => (
-            <a key={l} href="#" style={{ fontSize: 12, color: '#3d3d5c', textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => e.target.style.color = '#a78bfa'}
-              onMouseLeave={e => e.target.style.color = '#3d3d5c'}
-            >{l}</a>
-          ))}
-        </div>
-      </footer>
 
       <style>{`
         @keyframes fadeDown {
