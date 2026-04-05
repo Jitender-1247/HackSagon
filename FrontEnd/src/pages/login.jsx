@@ -41,7 +41,8 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem("token", data.token) 
         localStorage.setItem("name", data.name || data.email)
-        localStorage.setItem("uid", data.uid)      
+        localStorage.setItem("uid", data.uid) 
+        useStore.getState().setUser({ uid: data.uid, email, name: data.name })     
         toast.success('Login successful!')
         navigate('/dashboard')
       } else {
