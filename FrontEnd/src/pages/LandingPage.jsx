@@ -206,7 +206,7 @@ export default function LandingPage() {
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} />
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#84cc16' }} />
               <div style={{ flex: 1, background: '#1a1b2e', borderRadius: 6, height: 22, marginLeft: 8, display: 'flex', alignItems: 'center', paddingLeft: 10 }}>
-                <span style={{ fontSize: 11, color: '#3d3d5c' }}>collablearn.app/editor/api-design-spec</span>
+                <span style={{ fontSize: 11, color: '#3d3d5c' }}>InkSync/editor/api-design-spec</span>
               </div>
             </div>
             {/* Fake editor UI */}
@@ -224,7 +224,7 @@ export default function LandingPage() {
               </div>
               <div style={{ fontSize: 22, fontWeight: 700, color: '#f0f0ff', marginBottom: 12 }}>API Design Specification</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {['This document outlines the REST API design for CollabLearn v2...', 'Authentication follows JWT with 15-minute access tokens and...', ''].map((line, i) => (
+                {['This document outlines the REST API design for InkSync...', 'Authentication follows JWT with 15-minute access tokens and...', ''].map((line, i) => (
                   <div key={i} style={{ height: i === 2 ? 14 : 16, background: i === 2 ? '#12122a' : '#1a1b2e', borderRadius: 4, width: i === 0 ? '90%' : i === 1 ? '75%' : '40%' }} />
                 ))}
               </div>
@@ -340,7 +340,7 @@ export default function LandingPage() {
             Ready to build<br /><span style={{ color: '#6c3fff' }}>together?</span>
           </h2>
           <p style={{ fontSize: 16, color: '#6060a0', marginBottom: 36, lineHeight: 1.7 }}>
-            Join teams already collaborating on CollabLearn. Free to start, no credit card required.
+            Join teams already collaborating on InkSync. Free to start, no credit card required.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
